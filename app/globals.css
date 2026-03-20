@@ -240,8 +240,13 @@ button {
 
 .empty-card,
 .undefined-card,
-.form-card {
+.form-card,
+.inbox-card {
   padding: 1.4rem;
+}
+
+.cardless {
+  padding: 0;
 }
 
 .inline-form {
@@ -260,6 +265,31 @@ button {
   background: rgba(165, 43, 43, 0.08);
   color: #7d2323;
   border: 1px solid rgba(165, 43, 43, 0.14);
+}
+
+.success-banner {
+  border-radius: 16px;
+  padding: 0.8rem 1rem;
+  background: rgba(11, 93, 91, 0.09);
+  color: #124a48;
+  border: 1px solid rgba(11, 93, 91, 0.18);
+}
+
+.message-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.message-row {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(71, 54, 29, 0.09);
+}
+
+.message-row:first-child {
+  border-top: 0;
+  padding-top: 0;
 }
 
 @media (min-width: 980px) {

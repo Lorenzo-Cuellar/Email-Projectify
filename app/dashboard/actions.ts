@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { clearSession, requireUser } from "@/lib/auth";
+import { revokeGoogleAccount, syncGmailAccount } from "@/lib/gmail";
 import { prisma } from "@/lib/prisma";
 import { projectSchema } from "@/lib/validators";
 
@@ -12,10 +13,19 @@ type ProjectState = {
   success?: boolean;
 };
 
+type GmailState = {
+  error?: string;
+  success?: boolean;
+  importedCount?: number;
+  scannedCount?: number;
+};
+
 export async function createProjectAction(
-  _: ProjectState,
+  state: ProjectState | undefined,
   formData: FormData
 ): Promise<ProjectState> {
+  void state;
+
   const user = await requireUser();
 
   const parsed = projectSchema.safeParse({
@@ -39,9 +49,11 @@ export async function createProjectAction(
 }
 
 export async function updateProjectAction(
-  _: ProjectState,
+  state: ProjectState | undefined,
   formData: FormData
 ): Promise<ProjectState> {
+  void state;
+
   const user = await requireUser();
   const projectId = formData.get("projectId");
 
@@ -91,4 +103,72 @@ export async function deleteProjectAction(formData: FormData) {
 export async function logoutAction() {
   await clearSession();
   redirect("/");
+}
+
+export async function syncGmailAction(
+  state: GmailState | undefined,
+  formData: FormData
+): Promise<GmailState> {
+  void state;
+  void formData;
+
+  const user = await requireUser();
+
+  const account = await prisma.connectedEmailAccount.findUnique({
+    where: {
+      userId_provider: {
+        userId: user.id,
+        provider: "gmail"
+      }
+    }
+  });
+
+  if (!account) {
+    return { error: "Connect a Gmail account before syncing." };
+  }
+
+  try {
+    const result = await syncGmailAccount(account);
+
+    revalidatePath("/dashboard");
+
+    return {
+      success: true,
+      importedCount: result.importedCount,
+      scannedCount: result.scannedCount
+    };
+  } catch {
+    return { error: "Gmail sync failed. Check your Google OAuth settings and try again." };
+  }
+}
+
+export async function disconnectGmailAction(
+  state: GmailState | undefined,
+  formData: FormData
+): Promise<GmailState> {
+  void state;
+  void formData;
+
+  const user = await requireUser();
+
+  const account = await prisma.connectedEmailAccount.findUnique({
+    where: {
+      userId_provider: {
+        userId: user.id,
+        provider: "gmail"
+      }
+    }
+  });
+
+  if (!account) {
+    return { error: "No Gmail account is currently connected." };
+  }
+
+  try {
+    await revokeGoogleAccount(account);
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch {
+    return { error: "Unable to disconnect the Gmail account right now." };
+  }
 }

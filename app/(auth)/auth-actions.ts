@@ -10,7 +10,12 @@ type AuthFormState = {
   error?: string;
 };
 
-export async function signUpAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
+export async function signUpAction(
+  state: AuthFormState | undefined,
+  formData: FormData
+): Promise<AuthFormState> {
+  void state;
+
   const parsed = authSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -46,7 +51,12 @@ export async function signUpAction(_: AuthFormState, formData: FormData): Promis
   redirect("/dashboard");
 }
 
-export async function signInAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
+export async function signInAction(
+  state: AuthFormState | undefined,
+  formData: FormData
+): Promise<AuthFormState> {
+  void state;
+
   const parsed = authSchema.omit({ name: true }).safeParse({
     email: formData.get("email"),
     password: formData.get("password")

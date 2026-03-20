@@ -8,13 +8,15 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  name         String
-  email        String    @unique
-  passwordHash String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  projects     Project[]
+  id                String                  @id @default(cuid())
+  name              String
+  email             String                  @unique
+  passwordHash      String
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  projects          Project[]
+  connectedAccounts ConnectedEmailAccount[]
+  emailMessages     EmailMessage[]
 }
 
 model Project {
@@ -26,4 +28,48 @@ model Project {
   updatedAt   DateTime @updatedAt
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ConnectedEmailAccount {
+  id                   String         @id @default(cuid())
+  provider             String
+  providerAccountEmail String
+  accessToken          String?
+  refreshToken         String?
+  tokenExpiresAt       DateTime?
+  scope                String?
+  historyId            String?
+  lastSyncedAt         DateTime?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  userId               String
+  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages             EmailMessage[]
+
+  @@unique([userId, provider])
+  @@unique([provider, providerAccountEmail])
+}
+
+model EmailMessage {
+  id                 String                @id @default(cuid())
+  gmailMessageId     String
+  gmailThreadId      String
+  subject            String
+  fromAddress        String
+  toAddresses        String
+  snippet            String?
+  bodyText           String?
+  webLink            String
+  internalDateMs     String
+  receivedAt         DateTime
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  userId             String
+  connectedAccountId String
+  user               User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectedAccount   ConnectedEmailAccount @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([connectedAccountId, gmailMessageId])
+  @@index([userId, receivedAt])
+  @@index([connectedAccountId, receivedAt])
 }

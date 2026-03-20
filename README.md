@@ -6,17 +6,20 @@ AI-powered system that transforms unstructured emails into organized, project-ba
 
 Email Projectify is an AI-powered web application that automatically organizes a user’s emails into structured, project-based workflows. Instead of manually sorting through inbox clutter, the system continuously analyzes incoming emails, extracts key information, and intelligently maps them to relevant user-defined projects.
 
-## Phase 1 Status
+## Current Status
 
-Phase 1 is now scaffolded as a Next.js application with:
+Phases 1 and 2 are now scaffolded as a Next.js application with:
 
 - account creation and login
 - a project dashboard
 - project create, edit, and delete flows
 - a visible `Undefined` bucket for future unmatched email summaries
 - Prisma-backed local persistence with SQLite for development
+- Gmail OAuth connection
+- manual Gmail sync to ingest and persist recent email messages
+- a stored inbox view in the dashboard
 
-Phase 2 will add Gmail connection, scheduled ingestion, and AI summarization/classification.
+Phase 3 will add AI summarization and project classification.
 
 ## Local Setup
 
@@ -32,19 +35,27 @@ Phase 2 will add Gmail connection, scheduled ingestion, and AI summarization/cla
    cp .env.example .env
    ```
 
-3. Generate the Prisma client and create the local database:
+3. Add a long random value for `SESSION_SECRET`.
+
+4. To enable Gmail sync, create a Google OAuth web application and set:
+
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+   - authorized redirect URI: `http://localhost:3000/api/gmail/callback`
+
+5. Generate the Prisma client and create the local database:
 
    ```bash
    npm run db:push
    ```
 
-4. Optional: load demo data:
+6. Optional: load demo data:
 
    ```bash
    npm run db:seed
    ```
 
-5. Start the app:
+7. Start the app:
 
    ```bash
    npm run dev
@@ -60,6 +71,6 @@ If you seed the database, use:
 ## Roadmap
 
 - Phase 1: Accounts and project management
-- Phase 2: Gmail OAuth, polling, and email persistence
+- Phase 2: Gmail OAuth, manual sync, and email persistence
 - Phase 3: AI summarization and project matching
 - Phase 4: scheduled jobs, retries, and manual reclassification
